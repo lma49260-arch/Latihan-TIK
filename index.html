@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Literasi Digital, Data & Mesin Pencari</title>
+    <!-- Memuat Tailwind CSS untuk styling modern dan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Google Fonts: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Memuat Canvas Confetti untuk efek perayaan skor tinggi -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Kustomisasi scrollbar halus */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .fade-in {
+            animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-indigo-100 selection:text-indigo-700">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-slate-900 text-base sm:text-lg leading-tight">Kuis Informatika</h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">Literasi Digital, Data & Mesin Pencari</p>
+                </div>
+            </div>
+
+            <!-- Status Info di Header saat kuis berjalan -->
+            <div id="header-quiz-info" class="hidden items-center gap-3">
+                <button onclick="openNavModal()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-semibold border border-indigo-100 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    <span>Daftar Soal (<span id="answered-count-badge">0</span>/45)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Kontainer Utama -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10 flex flex-col justify-center">
+
+        <!-- ==================== 1. HALAMAN AWAL / INTRO ==================== -->
+        <section id="intro-screen" class="fade-in">
+            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+                <!-- Banner Atas -->
+                <div class="bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 px-6 py-8 sm:px-10 sm:py-10 text-white relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="absolute right-20 -bottom-16 w-40 h-40 bg-blue-400/20 rounded-full blur-xl pointer-events-none"></div>
+                    
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-xs font-semibold tracking-wide uppercase mb-4">
+                        ✨ Evaluasi Pembelajaran Interaktif
+                    </span>
+                    <h2 class="font-display text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">
+                        Kuis Literasi Digital, Data & Mesin Pencari
+                    </h2>
+                    <p class="text-indigo-100 text-sm sm:text-base max-w-2xl leading-relaxed">
+                        Uji pemahamanmu seputar pengelolaan data & informasi, penyimpanan awan, cara kerja mesin pencari, kredibilitas berita, hingga membedakan fakta, opini, dan hoaks!
+                    </p>
+
+                    <div class="flex flex-wrap gap-3 mt-6">
+                        <div class="flex items-center gap-2 bg-white/10 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium">
+                            <span>📝</span> 45 Soal Pilihan Ganda
+                        </div>
+                        <div class="flex items-center gap-2 bg-white/10 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium">
+                            <span>⚡</span> Auto-Next Otomatis
+                        </div>
+                        <div class="flex items-center gap-2 bg-white/10 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium">
+                            <span>✍️</span> + 5 Kunci Uraian
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Pengaturan Kuis Ringkas -->
+                <div class="p-6 sm:p-10 space-y-6">
+                    <!-- Input Nama -->
+                    <div>
+                        <label for="student-name" class="block text-sm font-semibold text-slate-700 mb-2">
+                            Nama Peserta <span class="text-slate-400 font-normal">(Opsional)</span>
+                        </label>
+                        <input type="text" id="student-name" placeholder="Masukkan nama lengkap atau nama panggilanmu..."
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all text-sm sm:text-base">
+                    </div>
+
+                    <!-- Opsi Acak Soal -->
+                    <div class="flex items-center justify-between bg-slate-50 px-4 py-3.5 rounded-xl border border-slate-200/70">
+                        <div>
+                            <span class="text-sm font-semibold text-slate-800 block">Acak Urutan Soal</span>
+                            <span class="text-xs text-slate-500">Tampilkan 45 soal dengan urutan acak setiap kali mulai</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="shuffle-toggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                    </div>
+
+                    <!-- Tombol Mulai -->
+                    <div class="pt-1">
+                        <button onclick="startQuiz()" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-display font-bold text-base sm:text-lg shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2">
+                            <span>Mulai Kuis</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 2. ANTARMUKA KUIS ==================== -->
+        <section id="quiz-screen" class="hidden fade-in space-y-5">
+            <!-- Progress Bar & Indikator Nomor -->
+            <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200/80">
+                <div class="flex items-center justify-between text-xs sm:text-sm font-semibold mb-2.5">
+                    <span class="text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg" id="question-counter">Soal 1 dari 45</span>
+                    <span class="text-slate-500" id="progress-percent">2%</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full transition-all duration-300" style="width: 2.22%"></div>
+                </div>
+            </div>
+
+            <!-- Kartu Soal Utama -->
+            <div id="question-card" class="bg-white rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100 p-6 sm:p-8 transition-all duration-200">
+                <!-- Nomor Soal Asli -->
+                <div class="flex items-center justify-between gap-2 mb-4">
+                    <span id="original-number-badge" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pertanyaan #1</span>
+                    <span class="text-xs text-slate-400 hidden sm:inline">Pilih jawaban untuk lanjut otomatis</span>
+                </div>
+
+                <!-- Teks Pertanyaan -->
+                <h3 id="question-text" class="font-display text-lg sm:text-xl font-bold text-slate-900 leading-relaxed mb-6">
+                    Memuat pertanyaan...
+                </h3>
+
+                <!-- Pilihan Jawaban A, B, C, D -->
+                <div id="options-container" class="space-y-3">
+                    <!-- Opsi dirender melalui JavaScript -->
+                </div>
+            </div>
+
+            <!-- Tombol Navigasi Bawah -->
+            <div class="flex items-center justify-between gap-3 pt-1">
+                <button id="prev-btn" onclick="prevQuestion()" class="px-4 sm:px-6 py-3.5 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none text-slate-700 font-semibold text-sm sm:text-base shadow-sm transition-all flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span>Sebelumnya</span>
+                </button>
+
+                <button onclick="openNavModal()" class="px-4 py-3.5 rounded-2xl bg-slate-200/70 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm transition-colors">
+                    <span id="mobile-nav-label">1 / 45</span>
+                </button>
+
+                <button id="finish-btn" onclick="confirmFinishQuiz()" class="px-5 sm:px-7 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-display font-bold text-sm sm:text-base shadow-lg shadow-emerald-200 transition-all flex items-center gap-2">
+                    <span>Selesai</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== 3. HALAMAN HASIL AKHIR ==================== -->
+        <section id="result-screen" class="hidden fade-in space-y-6">
+            <!-- Kartu Skor Utama -->
+            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden text-center">
+                <div id="result-banner" class="bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-800 px-6 py-8 sm:py-10 text-white">
+                    <p id="result-student-greeting" class="text-indigo-100 text-sm sm:text-base font-medium mb-2">Hasil Evaluasi Kuis</p>
+                    <h2 id="result-predicate" class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight mb-6">Luar Biasa!</h2>
+
+                    <!-- Lingkaran Nilai -->
+                    <div class="relative inline-flex items-center justify-center w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-white/10 backdrop-blur-md border-4 border-white/30 shadow-2xl mb-4">
+                        <div>
+                            <span id="final-score" class="font-display text-5xl sm:text-6xl font-extrabold block leading-none">100</span>
+                            <span class="text-xs uppercase tracking-widest text-indigo-100 font-semibold mt-1 block">Skor Akhir</span>
+                        </div>
+                    </div>
+
+                    <p id="result-summary-text" class="text-sm sm:text-base text-indigo-100 max-w-md mx-auto mt-2">
+                        Kamu berhasil menjawab dengan tepat!
+                    </p>
+                </div>
+
+                <!-- Statistik Benar / Salah / Kosong -->
+                <div class="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100 bg-slate-50/50">
+                    <div class="p-4 sm:p-5">
+                        <span class="text-xs font-semibold text-slate-400 uppercase block mb-1">Benar</span>
+                        <span id="stat-correct" class="font-display text-2xl sm:text-3xl font-extrabold text-emerald-600">0</span>
+                        <span class="text-xs text-slate-500 block mt-0.5">dari 45 soal</span>
+                    </div>
+                    <div class="p-4 sm:p-5">
+                        <span class="text-xs font-semibold text-slate-400 uppercase block mb-1">Salah</span>
+                        <span id="stat-wrong" class="font-display text-2xl sm:text-3xl font-extrabold text-rose-500">0</span>
+                        <span class="text-xs text-slate-500 block mt-0.5">soal</span>
+                    </div>
+                    <div class="p-4 sm:p-5">
+                        <span class="text-xs font-semibold text-slate-400 uppercase block mb-1">Akurasi</span>
+                        <span id="stat-accuracy" class="font-display text-2xl sm:text-3xl font-extrabold text-indigo-600">0%</span>
+                        <span class="text-xs text-slate-500 block mt-0.5">ketepatan</span>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi Hasil -->
+                <div class="p-5 sm:p-6 flex flex-wrap items-center justify-center gap-3">
+                    <button onclick="restartQuiz(false)" class="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-200 transition-all flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span>Ulangi Kuis</span>
+                    </button>
+                    <button onclick="restartQuiz(true)" class="px-5 py-3 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all flex items-center gap-2">
+                        <span>🔀 Ulangi & Acak Soal</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigasi Pembahasan PG vs Kunci Jawaban Uraian -->
+            <div class="bg-white rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                <div class="flex border-b border-slate-200 bg-slate-50/70 p-2 gap-2">
+                    <button id="tab-btn-pg" onclick="switchResultTab('pg')" class="flex-1 py-3 px-4 rounded-xl font-display font-bold text-xs sm:text-sm bg-white text-indigo-600 shadow-sm transition-all">
+                        📋 Pembahasan Pilihan Ganda (45)
+                    </button>
+                    <button id="tab-btn-essay" onclick="switchResultTab('essay')" class="flex-1 py-3 px-4 rounded-xl font-display font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all">
+                        ✍️ Kunci Jawaban Uraian (5)
+                    </button>
+                </div>
+
+                <!-- Konten Tab 1: Pembahasan Pilihan Ganda -->
+                <div id="tab-content-pg" class="p-5 sm:p-8">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                        <div>
+                            <h3 class="font-display font-bold text-lg text-slate-900">Rekap Jawaban Pilihan Ganda</h3>
+                            <p class="text-xs sm:text-sm text-slate-500">Perbandingan jawabanmu dengan kunci jawaban yang benar.</p>
+                        </div>
+                        <!-- Filter Semua / Salah -->
+                        <div class="inline-flex rounded-xl bg-slate-100 p-1 self-start">
+                            <button id="filter-all" onclick="filterReview('all')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-800 shadow-sm transition-all">
+                                Semua (45)
+                            </button>
+                            <button id="filter-wrong" onclick="filterReview('wrong')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all">
+                                Hanya yang Salah (<span id="filter-wrong-count">0</span>)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="review-list" class="space-y-4">
+                        <!-- Daftar review dirender lewat JS -->
+                    </div>
+                </div>
+
+                <!-- Konten Tab 2: Kunci Jawaban Uraian -->
+                <div id="tab-content-essay" class="hidden p-5 sm:p-8 space-y-5">
+                    <div class="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 flex items-start gap-3">
+                        <span class="text-xl">📚</span>
+                        <div>
+                            <h4 class="font-display font-bold text-amber-900 text-sm">Bahan Belajar Bagian II (Uraian / Esai)</h4>
+                            <p class="text-xs text-amber-800 mt-0.5 leading-relaxed">
+                                Berikut adalah 5 soal uraian dari lembar evaluasi beserta referensi jawaban ideal yang ringkas dan tepat untuk dipelajari.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="essay-list" class="space-y-4">
+                        <!-- Daftar soal uraian dirender lewat JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== MODAL NAVIGASI NOMOR SOAL ==================== -->
+    <div id="nav-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 fade-in">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="font-display font-bold text-lg text-slate-900">Navigasi Nomor Soal</h3>
+                    <p class="text-xs text-slate-500">Klik nomor untuk melompat langsung ke soal tersebut</p>
+                </div>
+                <button onclick="closeNavModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Legenda Warna -->
+            <div class="flex flex-wrap gap-3 text-xs text-slate-600 mb-4 pb-3 border-b border-slate-100">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-indigo-600 inline-block"></span> Sedang dibuka</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-100 border border-emerald-400 inline-block"></span> Sudah dijawab</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-100 border border-slate-300 inline-block"></span> Belum dijawab</span>
+            </div>
+
+            <!-- Grid 45 Nomor -->
+            <div id="question-grid" class="grid grid-cols-5 sm:grid-cols-9 gap-2 max-h-72 overflow-y-auto p-1">
+                <!-- Tombol nomor dirender lewat JS -->
+            </div>
+
+            <div class="mt-5 pt-4 border-t border-slate-100 flex justify-between items-center">
+                <span class="text-xs font-medium text-slate-500">Terjawab: <strong id="modal-answered-text" class="text-slate-800">0 dari 45</strong></span>
+                <button onclick="closeNavModal(); confirmFinishQuiz();" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors">
+                    Selesai & Kumpulkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL KONFIRMASI SELESAI (PENGGANTI CONFIRM()) ==================== -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 fade-in text-center">
+            <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-4 text-2xl">
+                ⚠️
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 mb-2">Kumpulkan Jawaban Sekarang?</h3>
+            <p id="confirm-modal-msg" class="text-sm text-slate-600 mb-6 leading-relaxed">
+                Pastikan kamu sudah memeriksa kembali jawabanmu.
+            </p>
+            <div class="flex gap-3">
+                <button onclick="closeConfirmModal()" class="flex-1 py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-colors">
+                    Cek Lagi
+                </button>
+                <button onclick="finishQuiz()" class="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-md shadow-emerald-200 transition-colors">
+                    Ya, Lihat Nilai
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-6 text-center text-xs text-slate-400">
+        Media Pembelajaran Interaktif • Literasi Digital & Informatika
+    </footer>
+
+    <!-- ==================== SCRIPT LOGIKA & BANK SOAL ==================== -->
+    <script>
+        // 1. Bank Data 45 Soal Pilihan Ganda Lengkap & Penjelasan Singkat
+        const masterQuestions = [
+            {
+                id: 1,
+                question: "Fakta mentah yang belum diolah dan belum memiliki arti yang jelas disebut...",
+                options: { A: "Informasi", B: "Data", C: "Konten", D: "SEO" },
+                answer: "B",
+                explanation: "Data adalah sekumpulan fakta mentah, angka, atau simbol yang belum diolah sehingga belum memiliki makna khusus."
+            },
+            {
+                id: 2,
+                question: "Hasil dari pengolahan data yang sudah memiliki arti dan konteks yang jelas dinamakan...",
+                options: { A: "Data mentah", B: "Informasi", C: "Kata kunci", D: "Indeks" },
+                answer: "B",
+                explanation: "Informasi merupakan hasil pemrosesan dan pengorganisasian data sehingga menjadi bermakna dan berguna bagi penerimanya."
+            },
+            {
+                id: 3,
+                question: "Saat bermain game, tindakan menekan tombol pada stik pengontrol termasuk jenis...",
+                options: { A: "Data masukan (input)", B: "Data keluaran (output)", C: "Konten digital", D: "SEO" },
+                answer: "A",
+                explanation: "Menekan tombol stik pengontrol memberikan perintah ke sistem komputer/konsol, sehingga termasuk data masukan (input)."
+            },
+            {
+                id: 4,
+                question: "Respon berupa gerakan karakter di layar game setelah tombol ditekan merupakan...",
+                options: { A: "Data masukan", B: "Data mentah", C: "Data keluaran", D: "Kata kunci" },
+                answer: "C",
+                explanation: "Gerakan karakter yang tampil di layar adalah hasil pemrosesan sistem yang ditampilkan kepada pengguna (output/data keluaran)."
+            },
+            {
+                id: 5,
+                question: "Informasi yang sudah dikemas dalam bentuk artikel, video, atau infografik agar mudah dinikmati pengguna disebut...",
+                options: { A: "Data", B: "Masukan", C: "Konten", D: "Indeks" },
+                answer: "C",
+                explanation: "Konten adalah informasi yang disajikan dalam berbagai format media (teks, gambar, video, audio) untuk dikonsumsi audiens."
+            },
+            {
+                id: 6,
+                question: "Salah satu cara optimasi SEO (Search Engine Optimization) agar web mudah ditemukan di internet adalah...",
+                options: { A: "Menghapus kata kunci", B: "Menggunakan kata kunci (keyword) yang relevan", C: "Mematikan sambungan internet", D: "Mengubah informasi menjadi data mentah" },
+                answer: "B",
+                explanation: "SEO bekerja dengan menyertakan kata kunci (keyword) yang relevan dengan topik pencarian pengguna agar halaman muncul di peringkat atas."
+            },
+            {
+                id: 7,
+                question: "Berikut ini yang merupakan contoh bentuk konten digital adalah...",
+                options: { A: "Kabel data dan monitor", B: "Artikel, video pembelajaran, dan infografik", C: "Tombol keyboard dan stik game", D: "Mesin pencari dan jaringan internet" },
+                answer: "B",
+                explanation: "Artikel daring, video pembelajaran, dan infografik adalah produk informasi berbasis digital (konten digital)."
+            },
+            {
+                id: 8,
+                question: "Bagian yang dapat digunakan untuk mencari informasi penting pada buku cetak adalah...",
+                options: { A: "Fitur ketik pencarian", B: "Tautan balik (backlink)", C: "Daftar isi dan indeks", D: "Tombol navigasi digital" },
+                answer: "C",
+                explanation: "Pada media cetak seperti buku, pembaca menggunakan daftar isi (di awal) atau indeks kata (di akhir) untuk menemukan halaman topik."
+            },
+            {
+                id: 9,
+                question: "Agar file tersusun rapi dan mudah dicari, sebaiknya file dikelompokkan ke dalam...",
+                options: { A: "Sampah (Recycle Bin)", B: "Folder berdasarkan kategori", C: "Layar utama tanpa nama", D: "Aplikasi musik" },
+                answer: "B",
+                explanation: "Mengelompokkan file ke dalam folder sesuai kategori (misalnya Tugas, Foto, Dokumen) memudahkan pengelolaan dan pencarian file."
+            },
+            {
+                id: 10,
+                question: "Menyiapkan salinan cadangan file (backup) secara berkala bertujuan untuk...",
+                options: { A: "Menghapus semua file secara permanen", B: "Mencegah kehilangan data jika perangkat rusak", C: "Membuat kinerja HP menjadi lambat", D: "Membuka situs web yang diblokir" },
+                answer: "B",
+                explanation: "Backup berfungsi menyelamatkan data penting apabila perangkat utama rusak, hilang, atau terkena serangan malware."
+            },
+            {
+                id: 11,
+                question: "Layanan seperti Google Drive, Dropbox, dan OneDrive termasuk jenis penyimpanan...",
+                options: { A: "Awan (cloud storage)", B: "Kertas fisik", C: "Buku cetak", D: "Tombol sistem" },
+                answer: "A",
+                explanation: "Google Drive, Dropbox, dan OneDrive adalah layanan penyimpanan berbasis internet (cloud storage) yang dapat diakses dari mana saja."
+            },
+            {
+                id: 12,
+                question: "Fitur peramban (browser) yang digunakan untuk menyimpan alamat situs web agar bisa dibuka kembali dengan cepat dinamakan...",
+                options: { A: "Snipping Tool", B: "Download", C: "Bookmark", D: "Password" },
+                answer: "C",
+                explanation: "Bookmark (markah buku) menyimpan tautan URL situs web favorit di browser agar mudah dikunjungi ulang."
+            },
+            {
+                id: 13,
+                question: "Mengambil tangkapan layar (screenshot) pada komputer atau laptop dapat menggunakan aplikasi bawaan yaitu...",
+                options: { A: "Google Drive", B: "Snipping Tool", C: "Instagram", D: "Microsoft Word" },
+                answer: "B",
+                explanation: "Snipping Tool adalah utilitas bawaan sistem operasi Windows untuk mengambil tangkapan layar sebagian maupun penuh."
+            },
+            {
+                id: 14,
+                question: "Menyimpan salinan file dokumen, gambar, atau video dari internet ke dalam perangkat disebut...",
+                options: { A: "Upload", B: "Download (Mengunduh)", C: "Bookmark", D: "Backlink" },
+                answer: "B",
+                explanation: "Download (unduh) adalah proses mentransfer file dari server internet ke penyimpanan lokal perangkat kita."
+            },
+            {
+                id: 15,
+                question: "Hal penting yang harus diperhatikan sebelum mengunduh file dari internet agar tidak melanggar hukum adalah...",
+                options: { A: "Ketentuan hak cipta", B: "Merk perangkat", C: "Ukuran layar", D: "Warna casing HP" },
+                answer: "A",
+                explanation: "Memperhatikan lisensi dan ketentuan hak cipta melindungi kita dari pelanggaran hukum pembajakan karya digital."
+            },
+            {
+                id: 16,
+                question: "Menghapus data atau file yang sudah tidak terpakai secara berkala bermanfaat untuk...",
+                options: { A: "Penuhnya ruang memori", B: "Melegakan ruang penyimpanan perangkat", C: "Merusak sistem komputer", D: "Menghilangkan koneksi internet" },
+                answer: "B",
+                explanation: "Membersihkan file sampah atau tidak terpakai menjaga kapasitas penyimpanan tetap lega dan performa perangkat optimal."
+            },
+            {
+                id: 17,
+                question: "Tingkat kesesuaian antara informasi yang ditampilkan oleh mesin pencari dengan kata kunci yang dimasukkan pengguna disebut...",
+                options: { A: "Perayapan", B: "Relevansi", C: "Pengindeksan", D: "Metadata" },
+                answer: "B",
+                explanation: "Relevansi mengukur seberapa cocok hasil pencarian yang ditampilkan mesin pencari dengan maksud kata kunci pengguna."
+            },
+            {
+                id: 18,
+                question: "Tiga tahap utama proses kerja mesin pencari secara berurutan adalah...",
+                options: { A: "Download, Upload, simpan", B: "Crawling, indexing dan ranking", C: "Pengindeksan, Perayapan, Pemeringkatan", D: "Pencarian, Pembuatan, Menghapus" },
+                answer: "B",
+                explanation: "Urutan kerja mesin pencari adalah: 1) Crawling (perayapan), 2) Indexing (pengindeksan), dan 3) Ranking (pemeringkatan)."
+            },
+            {
+                id: 19,
+                question: "Program otomatis yang bertugas menjelajahi internet untuk menemukan dan mengumpulkan halaman web dinamakan...",
+                options: { A: "Crawler atau spider", B: "Anti-virus", C: "Modem", D: "Monitor" },
+                answer: "A",
+                explanation: "Web crawler atau spider adalah bot otomatis mesin pencari yang menelusuri tautan di internet untuk mendata halaman web."
+            },
+            {
+                id: 20,
+                question: "Tahap menyimpan informasi yang telah dikumpulkan ke dalam basis data besar agar mudah dicari kembali dinamakan...",
+                options: { A: "Perayapan (crawling)", B: "Pengindeksan (indexing)", C: "Pemeringkatan (ranking)", D: "Penataan kata" },
+                answer: "B",
+                explanation: "Indexing adalah proses menyusun dan menyimpan data halaman hasil crawling ke dalam indeks database mesin pencari."
+            },
+            {
+                id: 21,
+                question: "Mesin pencari terbesar dan paling populer di dunia yang dibuat oleh Larry Page dan Sergey Brin adalah...",
+                options: { A: "Bing", B: "Yahoo", C: "Google", D: "Baidu" },
+                answer: "C",
+                explanation: "Google didirikan oleh Larry Page dan Sergey Brin pada tahun 1998 dan menjadi mesin pencari nomor satu di dunia."
+            },
+            {
+                id: 22,
+                question: "Mesin pencari yang dikembangkan oleh perusahaan Microsoft adalah...",
+                options: { A: "Google", B: "Bing", C: "Baidu", D: "Bard" },
+                answer: "B",
+                explanation: "Microsoft Bing adalah mesin pencari web yang dimiliki dan dioperasikan oleh perusahaan teknologi Microsoft."
+            },
+            {
+                id: 23,
+                question: "Mesin pencari terbesar yang sangat populer dan banyak digunakan di negara Tiongkok adalah...",
+                options: { A: "Baidu", B: "Yahoo", C: "Google", D: "Bing" },
+                answer: "A",
+                explanation: "Baidu adalah mesin pencari berbahasa Mandarin paling dominan dan terbesar di Tiongkok."
+            },
+            {
+                id: 24,
+                question: "Chatbot kecerdasan buatan (AI) dari Google yang awalnya dirilis dengan nama Bard lalu berganti nama pada tahun 2024 menjadi...",
+                options: { A: "ChatGPT", B: "Gemini", C: "Bing AI", D: "Baidu Baike" },
+                answer: "B",
+                explanation: "Pada Februari 2024, Google resmi mengubah nama layanan AI generatifnya dari Bard menjadi Gemini."
+            },
+            {
+                id: 25,
+                question: "Sejauh mana suatu informasi dari sumber tertentu dapat dipercaya dan diandalkan disebut dengan...",
+                options: { A: "Kredibilitas", B: "Algoritma", C: "Popularitas", D: "Komersial" },
+                answer: "A",
+                explanation: "Kredibilitas adalah tingkat kepercayaan dan keandalan suatu sumber informasi berdasarkan akurasi dan otoritasnya."
+            },
+            {
+                id: 26,
+                question: "Contoh sumber informasi resmi yang cenderung lebih dapat dipercaya adalah situs web...",
+                options: { A: "Blog pribadi tanpa nama", B: "Pemerintah dan universitas terkemuka", C: "Akun gosip di media sosial", D: "Forum obrolan umum" },
+                answer: "B",
+                explanation: "Situs instansi resmi pemerintah (.go.id / .gov) dan perguruan tinggi (.ac.id / .edu) melewati proses verifikasi yang ketat."
+            },
+            {
+                id: 27,
+                question: "Informasi yang kredibel harus memiliki referensi yang seimbang dan tidak bias untuk menjaga...",
+                options: { A: "Kecepatan internet", B: "Objektivitas informasi", C: "Jumlah pengikut (followers)", D: "Tampilan gambar" },
+                answer: "B",
+                explanation: "Objektivitas memastikan informasi disampaikan secara netral berdasarkan fakta tanpa memihak kepentingan tertentu."
+            },
+            {
+                id: 28,
+                question: "Hal yang perlu diperiksa untuk mengetahui apakah informasi yang kita baca masih relevan dan akurat adalah...",
+                options: { A: "Warna latar belakang situs", B: "Tanggal publikasi", C: "Ukuran huruf", D: "Jumlah iklan di halaman" },
+                answer: "B",
+                explanation: "Tanggal publikasi membantu pembaca memastikan apakah data atau berita tersebut masih mutakhir (up-to-date) atau sudah kedaluwarsa."
+            },
+            {
+                id: 29,
+                question: "Tulisan yang dapat dipercaya (kredibel) biasanya disajikan dengan gaya penulisan yang...",
+                options: { A: "Penuh dengan kesalahan tata bahasa (gramatikal)", B: "Acak-acakan dan tidak terstruktur", C: "Profesional dan terorganisasi", D: "Menggunakan bahasa gaul yang berlebihan" },
+                answer: "C",
+                explanation: "Media yang kredibel menerapkan standar penyuntingan sehingga bahasanya baku, profesional, dan terstruktur rapi."
+            },
+            {
+                id: 30,
+                question: "Apabila isi suatu berita di satu situs terpercaya sama dengan isi berita di situs terpercaya lainnya, maka informasi tersebut memenuhi faktor...",
+                options: { A: "Kualifikasi penulis", B: "Konsistensi dengan sumber lain", C: "Pencadangan data", D: "Hak cipta" },
+                answer: "B",
+                explanation: "Membandingkan berita lintas media tepercaya (cross-check) menguji konsistensi kebenaran suatu peristiwa."
+            },
+            {
+                id: 31,
+                question: "Untuk memeriksa kebenaran suatu informasi digital yang mencurigakan, kita dapat menggunakan situs web khusus...",
+                options: { A: "Cek fakta (fact-checking)", B: "Pemutar musik", C: "Permainan daring", D: "Edit foto" },
+                answer: "A",
+                explanation: "Situs cek fakta (fact-checking) didedikasikan untuk memverifikasi klaim viral dan membongkar informasi hoaks."
+            },
+            {
+                id: 32,
+                question: "Berikut ini yang bukan merupakan contoh situs web pengecek fakta (fact-check) adalah...",
+                options: { A: "turnbackhoax.id", B: "cekfakta.com", C: "FactCheck.org", D: "toko-online.com" },
+                answer: "D",
+                explanation: "turnbackhoax.id, cekfakta.com, dan FactCheck.org adalah situs pengecek fakta, sedangkan toko-online.com adalah situs belanja."
+            },
+            {
+                id: 33,
+                question: "Profesi dalam media digital yang bertugas mengumpulkan informasi dan menulis laporan berita adalah...",
+                options: { A: "Editor", B: "Jurnalis dan Reporter", C: "Ahli SEO", D: "Fotografer" },
+                answer: "B",
+                explanation: "Jurnalis dan reporter bertugas melakukan liputan di lapangan, mewawancarai narasumber, dan menyusun naskah berita."
+            },
+            {
+                id: 34,
+                question: "Orang yang bertanggung jawab mengedit dan memeriksa keakuratan berita sebelum diterbitkan dinamakan...",
+                options: { A: "Reporter", B: "Videografer", C: "Editor", D: "Ahli Keamanan Informasi" },
+                answer: "C",
+                explanation: "Editor (penyunting) memeriksa kelayakan, tata bahasa, dan akurasi fakta naskah sebelum dipublikasikan ke publik."
+            },
+            {
+                id: 35,
+                question: "Peran ahli SEO (Search Engine Optimization) dalam ekosistem media pers digital adalah...",
+                options: { A: "Mengambil foto dan video liputan", B: "Mengoptimalkan konten agar mudah ditemukan", C: "Menjaga komputer dari serangan siber", D: "Menulis laporan berita utama" },
+                answer: "B",
+                explanation: "Ahli SEO merancang strategi kata kunci dan struktur artikel agar berita mudah ditemukan pembaca lewat mesin pencari."
+            },
+            {
+                id: 36,
+                question: "Profesi yang bertugas menjaga data dan melindungi sistem komputer media pers dari serangan siber adalah...",
+                options: { A: "Ahli Keamanan Informasi", B: "Ahli SEO", C: "Editor", D: "Jurnalis" },
+                answer: "A",
+                explanation: "Ahli Keamanan Informasi (Cybersecurity Specialist) melindungi server situs berita dan data redaksi dari peretasan."
+            },
+            {
+                id: 37,
+                question: "Pernyataan yang benar-benar terjadi, dapat dibuktikan keasliannya, dan bersifat objektif dinamakan...",
+                options: { A: "Opini", B: "Hoaks", C: "Fakta", D: "Gossip" },
+                answer: "C",
+                explanation: "Fakta adalah kenyataan atau peristiwa yang sungguh terjadi dan memiliki bukti objektif yang dapat diverifikasi."
+            },
+            {
+                id: 38,
+                question: "Penilaian atau pendapat pribadi seseorang terhadap suatu hal yang bersifat subjektif disebut...",
+                options: { A: "Fakta", B: "Opini", C: "Hoaks", D: "Laporan" },
+                answer: "B",
+                explanation: "Opini merupakan pandangan, perasaan, atau penilaian subjektif seseorang yang kebenarannya bisa berbeda bagi orang lain."
+            },
+            {
+                id: 39,
+                question: "Kalimat berikut yang merupakan contoh dari fakta adalah...",
+                options: {
+                    A: "\"Nasi goreng adalah makanan terenak di dunia.\"",
+                    B: "\"Pelajaran Matematika adalah pelajaran paling menyenangkan.\"",
+                    C: "\"Indonesia merdeka pada tanggal 17 Agustus 1945.\"",
+                    D: "\"Baju warna biru lebih bagus daripada baju warna merah.\""
+                },
+                answer: "C",
+                explanation: "Proklamasi kemerdekaan Indonesia pada 17 Agustus 1945 adalah peristiwa sejarah nyata yang terbukti kebenarannya."
+            },
+            {
+                id: 40,
+                question: "Informasi palsu yang sengaja dibuat dan disebarkan untuk menipu atau menimbulkan kepanikan dinamakan...",
+                options: { A: "Fakta", B: "Opini", C: "Hoaks", D: "Berita resmi" },
+                answer: "C",
+                explanation: "Hoaks adalah berita bohong atau informasi fabrikasi yang dibuat dengan sengaja untuk menyesatkan masyarakat."
+            },
+            {
+                id: 41,
+                question: "Dalam ekosistem media pers digital, profesi yang bertugas mengambil gambar dan video liputan berita adalah...",
+                options: { A: "Editor", B: "Ahli SEO", C: "Fotografer dan Videografer", D: "Ahli Keamanan Informasi" },
+                answer: "C",
+                explanation: "Fotografer dan videografer mengabadikan dokumentasi visual (foto/video) untuk melengkapi laporan berita."
+            },
+            {
+                id: 42,
+                question: "Kita perlu memeriksa kualifikasi penulis sebuah artikel digital untuk memastikan bahwa penulis...",
+                options: {
+                    A: "Berpengetahuan dan berpengalaman di bidangnya",
+                    B: "Memiliki banyak pengikut di media sosial",
+                    C: "Menggunakan hiasan gambar yang menarik",
+                    D: "Menulis berita tanpa menyantumkan sumber"
+                },
+                answer: "A",
+                explanation: "Kualifikasi dan rekam jejak penulis menunjukkan apakah ia memiliki kompetensi atau keahlian di topik yang dibahas."
+            },
+            {
+                id: 43,
+                question: "Mesin pencari web yang juga dikenal sebagai portal internet dengan layanan berita, email, dan hiburan adalah...",
+                options: { A: "Googlebot", B: "Yahoo", C: "Snipping Tool", D: "Baidu Baike" },
+                answer: "B",
+                explanation: "Yahoo! terkenal sebagai mesin pencari sekaligus portal web yang menyediakan Yahoo Mail, Yahoo News, dan hiburan."
+            },
+            {
+                id: 44,
+                question: "Tujuan utama memberikan nama file dan folder secara jelas saat menyimpan data adalah...",
+                options: {
+                    A: "Mengubah file dokumen menjadi bentuk gambar",
+                    B: "Memudahkan pencarian kembali file saat dibutuhkan",
+                    C: "Menghapus file tidak penting secara otomatis",
+                    D: "Mempercepat koneksi internet"
+                },
+                answer: "B",
+                explanation: "Penamaan file yang deskriptif dan terstruktur membuat kita cepat menemukan file tanpa harus membuka satu per satu."
+            },
+            {
+                id: 45,
+                question: "Dalam media sosial, tindakan mengunggah foto atau menulis komentar yang kita lakukan dikategorikan sebagai...",
+                options: { A: "Data masukan (input)", B: "Data keluaran (output)", C: "Indeks halaman", D: "Mesin pencari" },
+                answer: "A",
+                explanation: "Saat pengguna memasukkan teks komentar atau mengunggah file foto ke platform, pengguna memberikan data masukan (input) ke sistem."
+            }
+        ];
+
+        // 2. Data 5 Soal Uraian & Kunci Jawaban Ideal
+        const essayQuestions = [
+            {
+                num: 1,
+                question: "Jelaskan perbedaan antara data dan informasi, lalu berikan masing-masing 1 contoh sederhananya!",
+                answer: "<strong>Perbedaan:</strong> Data adalah fakta mentah yang belum diolah dan belum memiliki arti jelas, sedangkan informasi adalah hasil pengolahan data yang sudah memiliki makna dan konteks yang berguna.<br><strong>Contoh Data:</strong> Angka-angka mentah seperti <code>85, 90, 78</code>.<br><strong>Contoh Informasi:</strong> \"Nilai rata-rata ujian Informatika Budi adalah 84,3 sehingga dinyatakan lulus.\""
+            },
+            {
+                num: 2,
+                question: "Sebutkan 3 contoh aplikasi penyimpanan awan (cloud storage) yang sering digunakan!",
+                answer: "Tiga contoh layanan penyimpanan awan (cloud storage) yang populer digunakan adalah: <strong>1) Google Drive</strong>, <strong>2) Dropbox</strong>, dan <strong>3) Microsoft OneDrive</strong> (atau iCloud)."
+            },
+            {
+                num: 3,
+                question: "Sebutkan 3 tahap utama proses kerja mesin pencari dalam mengolah informasi di internet!",
+                answer: "Tiga tahap utama cara kerja mesin pencari secara berurutan adalah:<br>1. <strong>Crawling (Perayapan):</strong> Program bot (crawler/spider) menjelajahi internet untuk menemukan halaman web.<br>2. <strong>Indexing (Pengindeksan):</strong> Menyimpan dan mengorganisasikan informasi halaman web ke dalam basis data besar.<br>3. <strong>Ranking (Pemeringkatan):</strong> Mengurutkan hasil pencarian berdasarkan tingkat relevansi dengan kata kunci pengguna."
+            },
+            {
+                num: 4,
+                question: "Sebutkan 3 contoh sumber informasi resmi yang cenderung lebih dapat dipercaya menurut materi!",
+                answer: "Tiga contoh sumber informasi yang kredibel dan dapat dipercaya yaitu:<br>1. <strong>Situs web resmi pemerintah</strong> (domain <code>.go.id</code> atau <code>.gov</code>).<br>2. <strong>Situs web universitas atau lembaga pendidikan terkemuka</strong> (domain <code>.ac.id</code> atau <code>.edu</code>).<br>3. <strong>Media berita/pers arus utama yang terverifikasi</strong> serta situs pengecek fakta resmi (seperti <code>cekfakta.com</code> atau <code>turnbackhoax.id</code>)."
+            },
+            {
+                num: 5,
+                question: "Jelaskan perbedaan singkat antara fakta, opini, dan hoaks berdasarkan dasar kebenarannya!",
+                answer: "• <strong>Fakta:</strong> Pernyataan yang benar-benar terjadi, bersifat objektif, dan dapat dibuktikan kebenarannya.<br>• <strong>Opini:</strong> Pendapat, penilaian, atau pandangan pribadi seseorang yang bersifat subjektif (belum tentu disetujui semua orang).<br>• <strong>Hoaks:</strong> Informasi palsu atau berita bohong yang sengaja dibuat dan disebarkan untuk menipu atau menyesatkan."
+            }
+        ];
+
+        // 3. State Aplikasi
+        let activeQuestions = [];
+        let userAnswers = {}; // key: question.id, value: 'A' | 'B' | 'C' | 'D'
+        let currentIndex = 0;
+        let studentName = '';
+        let autoNextTimer = null;
+
+        // 4. Fungsi Memulai Kuis
+        function startQuiz() {
+            if (autoNextTimer) clearTimeout(autoNextTimer);
+            const nameInput = document.getElementById('student-name').value.trim();
+            studentName = nameInput || 'Peserta';
+            const shouldShuffle = document.getElementById('shuffle-toggle').checked;
+
+            // Salin soal & acak jika opsi aktif
+            activeQuestions = [...masterQuestions];
+            if (shouldShuffle) {
+                for (let i = activeQuestions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [activeQuestions[i], activeQuestions[j]] = [activeQuestions[j], activeQuestions[i]];
+                }
+            }
+
+            userAnswers = {};
+            currentIndex = 0;
+
+            // Update tampilan UI
+            document.getElementById('intro-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+
+            const headerInfo = document.getElementById('header-quiz-info');
+            headerInfo.classList.remove('hidden');
+            headerInfo.classList.add('flex');
+
+            updateAnsweredBadge();
+            renderQuestion();
+        }
+
+        // 5. Render Soal ke Layar (Tanpa penjelasan & Auto-Next saat opsi dipilih)
+        function renderQuestion() {
+            const q = activeQuestions[currentIndex];
+            const total = activeQuestions.length;
+            const userChoice = userAnswers[q.id];
+
+            // Progress bar & nomor soal
+            document.getElementById('question-counter').textContent = `Soal ${currentIndex + 1} dari ${total}`;
+            document.getElementById('mobile-nav-label').textContent = `${currentIndex + 1} / ${total}`;
+            const percent = Math.round(((currentIndex + 1) / total) * 100);
+            document.getElementById('progress-percent').textContent = `${percent}%`;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+
+            document.getElementById('original-number-badge').textContent = `Pertanyaan #${q.id}`;
+            document.getElementById('question-text').textContent = q.question;
+
+            // Animasi halus kartu soal
+            const card = document.getElementById('question-card');
+            card.classList.remove('fade-in');
+            void card.offsetWidth;
+            card.classList.add('fade-in');
+
+            // Render 4 pilihan jawaban
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            const keys = ['A', 'B', 'C', 'D'];
+            keys.forEach(key => {
+                const optionText = q.options[key];
+                const isSelected = userChoice === key;
+                const isCorrect = key === q.answer;
+
+                let cardClasses = "w-full text-left p-4 rounded-2xl border-2 transition-all duration-150 flex items-center justify-between gap-3.5 group cursor-pointer active:scale-[0.99] ";
+                let badgeClasses = "w-9 h-9 rounded-xl flex items-center justify-center font-display font-bold text-sm shrink-0 transition-colors ";
+                let statusIcon = "";
+
+                if (userChoice) {
+                    if (isCorrect) {
+                        cardClasses += "border-emerald-500 bg-emerald-50 text-emerald-900 shadow-sm";
+                        badgeClasses += "bg-emerald-500 text-white";
+                        statusIcon = `<span class="text-emerald-600 font-bold text-lg shrink-0">✓</span>`;
+                    } else if (isSelected) {
+                        cardClasses += "border-rose-500 bg-rose-50 text-rose-900 shadow-sm";
+                        badgeClasses += "bg-rose-500 text-white";
+                        statusIcon = `<span class="text-rose-600 font-bold text-lg shrink-0">✕</span>`;
+                    } else {
+                        cardClasses += "border-slate-200 text-slate-400 opacity-60";
+                        badgeClasses += "bg-slate-100 text-slate-400";
+                    }
+                } else {
+                    cardClasses += "border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 text-slate-700";
+                    badgeClasses += "bg-slate-100 text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-700";
+                }
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.dataset.optionKey = key;
+                btn.className = cardClasses;
+                btn.onclick = () => selectOption(key);
+
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3.5">
+                        <span class="${badgeClasses}">${key}</span>
+                        <span class="text-sm sm:text-base font-medium leading-snug">${optionText}</span>
+                    </div>
+                    ${statusIcon}
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Atur tombol navigasi Sebelumnya & Selesai
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+        }
+
+        // 6. Memilih Opsi Jawaban + Indikator Hijau/Merah + Auto-Next Otomatis (~650ms)
+        function selectOption(optionKey) {
+            if (autoNextTimer) clearTimeout(autoNextTimer);
+
+            const q = activeQuestions[currentIndex];
+            userAnswers[q.id] = optionKey;
+            updateAnsweredBadge();
+
+            // Beri umpan balik warna hijau (benar) dan merah (salah) secara instan
+            const buttons = document.querySelectorAll('#options-container button');
+            buttons.forEach(btn => {
+                const key = btn.dataset.optionKey;
+                const badge = btn.querySelector('span:first-child');
+                const existingIcon = btn.querySelector('.status-icon');
+                if (existingIcon) existingIcon.remove();
+
+                if (key === q.answer) {
+                    btn.className = "w-full text-left p-4 rounded-2xl border-2 transition-all duration-150 flex items-center justify-between gap-3.5 border-emerald-500 bg-emerald-50 text-emerald-900 shadow-md shadow-emerald-100 scale-[1.01]";
+                    badge.className = "w-9 h-9 rounded-xl flex items-center justify-center font-display font-bold text-sm shrink-0 bg-emerald-500 text-white";
+                    btn.insertAdjacentHTML('beforeend', `<span class="status-icon text-emerald-600 font-bold text-lg shrink-0">✓</span>`);
+                } else if (key === optionKey) {
+                    btn.className = "w-full text-left p-4 rounded-2xl border-2 transition-all duration-150 flex items-center justify-between gap-3.5 border-rose-500 bg-rose-50 text-rose-900 shadow-md shadow-rose-100";
+                    badge.className = "w-9 h-9 rounded-xl flex items-center justify-center font-display font-bold text-sm shrink-0 bg-rose-500 text-white";
+                    btn.insertAdjacentHTML('beforeend', `<span class="status-icon text-rose-600 font-bold text-lg shrink-0">✕</span>`);
+                } else {
+                    btn.className = "w-full text-left p-4 rounded-2xl border-2 transition-all duration-150 flex items-center justify-between gap-3.5 border-slate-200 text-slate-400 opacity-55";
+                    badge.className = "w-9 h-9 rounded-xl flex items-center justify-center font-display font-bold text-sm shrink-0 bg-slate-100 text-slate-400";
+                }
+            });
+
+            // Otomatis pindah ke soal selanjutnya setelah jeda singkat (650ms) agar warna hijau/merah terlihat jelas
+            autoNextTimer = setTimeout(() => {
+                if (currentIndex < activeQuestions.length - 1) {
+                    currentIndex++;
+                    renderQuestion();
+                } else {
+                    // Di soal ke-45: jika semua soal sudah terjawab, langsung tampilkan hasil; jika masih ada kosong, tampilkan konfirmasi
+                    if (Object.keys(userAnswers).length === activeQuestions.length) {
+                        finishQuiz();
+                    } else {
+                        confirmFinishQuiz();
+                    }
+                }
+            }, 650);
+        }
+
+        function updateAnsweredBadge() {
+            const count = Object.keys(userAnswers).length;
+            document.getElementById('answered-count-badge').textContent = count;
+        }
+
+        function prevQuestion() {
+            if (autoNextTimer) clearTimeout(autoNextTimer);
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < activeQuestions.length - 1) {
+                currentIndex++;
+                renderQuestion();
+            }
+        }
+
+        // 7. Modal Navigasi Nomor Soal
+        function openNavModal() {
+            const grid = document.getElementById('question-grid');
+            grid.innerHTML = '';
+
+            activeQuestions.forEach((q, idx) => {
+                const isCurrent = idx === currentIndex;
+                const isAnswered = Boolean(userAnswers[q.id]);
+
+                let btnClass = "h-10 rounded-xl font-display font-bold text-xs transition-all border ";
+                if (isCurrent) {
+                    btnClass += "bg-indigo-600 text-white border-indigo-600 shadow-sm";
+                } else if (isAnswered) {
+                    btnClass += "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100";
+                } else {
+                    btnClass += "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100";
+                }
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = btnClass;
+                btn.textContent = idx + 1;
+                btn.onclick = () => {
+                    currentIndex = idx;
+                    renderQuestion();
+                    closeNavModal();
+                };
+                grid.appendChild(btn);
+            });
+
+            document.getElementById('modal-answered-text').textContent = `${Object.keys(userAnswers).length} dari ${activeQuestions.length}`;
+            document.getElementById('nav-modal').classList.remove('hidden');
+        }
+
+        function closeNavModal() {
+            document.getElementById('nav-modal').classList.add('hidden');
+        }
+
+        // 8. Konfirmasi & Selesaikan Kuis
+        function confirmFinishQuiz() {
+            const total = activeQuestions.length;
+            const answered = Object.keys(userAnswers).length;
+            const unanswered = total - answered;
+
+            const msgEl = document.getElementById('confirm-modal-msg');
+            if (unanswered > 0) {
+                msgEl.innerHTML = `Kamu telah menjawab <strong>${answered}</strong> dari <strong>${total}</strong> soal. Masih ada <span class="text-rose-600 font-bold">${unanswered} soal</span> yang belum dijawab. Yakin ingin mengakhiri kuis?`;
+            } else {
+                msgEl.innerHTML = `Hebat! Semua <strong>${total} soal</strong> sudah kamu jawab. Siap melihat hasil nilai akhirmu?`;
+            }
+
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+        }
+
+        function finishQuiz() {
+            closeConfirmModal();
+
+            // Hitung skor
+            let correctCount = 0;
+            activeQuestions.forEach(q => {
+                if (userAnswers[q.id] === q.answer) {
+                    correctCount++;
+                }
+            });
+
+            const total = activeQuestions.length;
+            const wrongCount = total - correctCount;
+            const score = Math.round((correctCount / total) * 100);
+
+            // Sembunyikan layar kuis, tampilkan layar hasil
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('header-quiz-info').classList.add('hidden');
+            document.getElementById('header-quiz-info').classList.remove('flex');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            // Isi data skor & statistik
+            document.getElementById('result-student-greeting').textContent = `Hasil Evaluasi • ${studentName}`;
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('stat-correct').textContent = correctCount;
+            document.getElementById('stat-wrong').textContent = wrongCount;
+            document.getElementById('stat-accuracy').textContent = `${score}%`;
+            document.getElementById('filter-wrong-count').textContent = wrongCount;
+
+            // Predikat & Warna Banner
+            const predicateEl = document.getElementById('result-predicate');
+            const summaryEl = document.getElementById('result-summary-text');
+            const bannerEl = document.getElementById('result-banner');
+
+            bannerEl.className = "px-6 py-8 sm:py-10 text-white bg-gradient-to-br ";
+            if (score >= 85) {
+                bannerEl.classList.add('from-emerald-600', 'via-teal-600', 'to-emerald-800');
+                predicateEl.textContent = "🏆 Luar Biasa!";
+                summaryEl.textContent = `Selamat ${studentName}! Penguasaan materimu tentang literasi digital & mesin pencari sangat mengesankan.`;
+            } else if (score >= 70) {
+                bannerEl.classList.add('from-indigo-600', 'via-blue-600', 'to-indigo-800');
+                predicateEl.textContent = "🌟 Sangat Baik!";
+                summaryEl.textContent = `Kerja bagus, ${studentName}! Sebagian besar materi sudah kamu kuasai dengan baik.`;
+            } else if (score >= 55) {
+                bannerEl.classList.add('from-amber-500', 'via-orange-500', 'to-amber-700');
+                predicateEl.textContent = "👍 Cukup Baik";
+                summaryEl.textContent = `Terus berlatih, ${studentName}! Pelajari kembali pembahasan soal yang masih keliru di bawah ini.`;
+            } else {
+                bannerEl.classList.add('from-rose-600', 'via-red-600', 'to-rose-800');
+                predicateEl.textContent = "📚 Perlu Belajar Lagi";
+                summaryEl.textContent = `Jangan menyerah, ${studentName}! Baca pembahasan lengkap di bawah dan coba ulangi kuisnya.`;
+            }
+
+            // Efek Konfeti jika skor >= 75
+            if (score >= 75 && typeof confetti === 'function') {
+                confetti({
+                    particleCount: 110,
+                    spread: 75,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            // Render Pembahasan & Kunci Uraian
+            renderReviewList('all');
+            renderEssayAnswers();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 9. Render Ringkasan Rekap Jawaban Pilihan Ganda (Ringkas tanpa penjelasan panjang)
+        function renderReviewList(filterType) {
+            const container = document.getElementById('review-list');
+            container.innerHTML = '';
+
+            let displayedCount = 0;
+
+            activeQuestions.forEach((q, idx) => {
+                const userChoice = userAnswers[q.id];
+                const isCorrect = userChoice === q.answer;
+
+                if (filterType === 'wrong' && isCorrect) return;
+                displayedCount++;
+
+                const card = document.createElement('div');
+                card.className = `p-4 sm:p-5 rounded-2xl border ${isCorrect ? 'border-emerald-200/80 bg-emerald-50/30' : 'border-rose-200/80 bg-rose-50/30'}`;
+
+                const userAnswerText = userChoice ? `${userChoice}. ${q.options[userChoice]}` : 'Tidak dijawab';
+                const correctAnswerText = `${q.answer}. ${q.options[q.answer]}`;
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-lg ${isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                            No. ${idx + 1} (Soal #${q.id}) • ${isCorrect ? '✓ Benar' : '✕ Salah'}
+                        </span>
+                    </div>
+                    <p class="font-semibold text-slate-900 text-sm sm:text-base mb-2.5 leading-relaxed">${q.question}</p>
+                    <div class="space-y-1 text-xs sm:text-sm bg-white/80 p-3 rounded-xl border border-slate-200/60">
+                        <div class="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2">
+                            <span class="font-semibold text-slate-500 min-w-[115px]">Jawabanmu:</span>
+                            <span class="font-semibold ${isCorrect ? 'text-emerald-700' : 'text-rose-600'}">${userAnswerText}</span>
+                        </div>
+                        ${!isCorrect ? `
+                        <div class="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2 pt-1 border-t border-slate-100">
+                            <span class="font-semibold text-slate-500 min-w-[115px]">Kunci Jawaban:</span>
+                            <span class="font-bold text-emerald-700">${correctAnswerText}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            if (displayedCount === 0 && filterType === 'wrong') {
+                container.innerHTML = `
+                    <div class="text-center py-10 bg-emerald-50/50 rounded-2xl border border-emerald-100">
+                        <span class="text-3xl block mb-2">🎉</span>
+                        <h4 class="font-display font-bold text-emerald-900">Sempurna! Tidak Ada Jawaban Salah</h4>
+                        <p class="text-xs text-emerald-700 mt-1">Kamu menjawab seluruh 45 soal dengan benar.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function filterReview(type) {
+            const btnAll = document.getElementById('filter-all');
+            const btnWrong = document.getElementById('filter-wrong');
+
+            if (type === 'all') {
+                btnAll.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-800 shadow-sm transition-all";
+                btnWrong.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all";
+            } else {
+                btnWrong.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-rose-600 shadow-sm transition-all";
+                btnAll.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all";
+            }
+            renderReviewList(type);
+        }
+
+        // 10. Render Kunci Jawaban Soal Uraian
+        function renderEssayAnswers() {
+            const container = document.getElementById('essay-list');
+            container.innerHTML = '';
+
+            essayQuestions.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "p-5 rounded-2xl border border-slate-200 bg-slate-50/40";
+                div.innerHTML = `
+                    <div class="flex items-start gap-3 mb-3">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white font-display font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                            ${item.num}
+                        </span>
+                        <h4 class="font-semibold text-slate-900 text-sm sm:text-base leading-snug">${item.question}</h4>
+                    </div>
+                    <div class="ml-0 sm:ml-10 p-3.5 rounded-xl bg-white border border-slate-200/80 text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        ${item.answer}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // 11. Ganti Tab Hasil (PG vs Uraian)
+        function switchResultTab(tabName) {
+            const btnPg = document.getElementById('tab-btn-pg');
+            const btnEssay = document.getElementById('tab-btn-essay');
+            const contentPg = document.getElementById('tab-content-pg');
+            const contentEssay = document.getElementById('tab-content-essay');
+
+            if (tabName === 'pg') {
+                btnPg.className = "flex-1 py-3 px-4 rounded-xl font-display font-bold text-xs sm:text-sm bg-white text-indigo-600 shadow-sm transition-all";
+                btnEssay.className = "flex-1 py-3 px-4 rounded-xl font-display font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all";
+                contentPg.classList.remove('hidden');
+                contentEssay.classList.add('hidden');
+            } else {
+                btnEssay.className = "flex-1 py-3 px-4 rounded-xl font-display font-bold text-xs sm:text-sm bg-white text-indigo-600 shadow-sm transition-all";
+                btnPg.className = "flex-1 py-3 px-4 rounded-xl font-display font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all";
+                contentEssay.classList.remove('hidden');
+                contentPg.classList.add('hidden');
+            }
+        }
+
+        // 12. Ulangi Kuis
+        function restartQuiz(shuffleNow) {
+            document.getElementById('shuffle-toggle').checked = shuffleNow;
+            startQuiz();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
